@@ -47,6 +47,5 @@ RSS_URLS = [
     "https://3dnews.ru/news/rss/",
     "https://rssexport.rbc.ru/rbcnews/news/30/full.rss",
     "https://news.google.com/rss/search?q=автокредит&hl=ru&gl=RU&ceid=RU:ru",
-    "https://rssexport.rbc.ru/rbcnews/news/finance/full.rss",
     "https://frankmedia.ru/feed",
 ]
