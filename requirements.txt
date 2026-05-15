@@ -1,0 +1,21 @@
+pandas==2.2.2
+python-dotenv==1.0.1
+
+# Парсинг
+feedparser==6.0.11
+requests==2.32.3
+telethon==1.36.0
+
+# LLM и embeddings
+openai==2.36.0
+
+# Дедубликация
+numpy==1.26.4
+scikit-learn==1.5.1
+
+# Очистка текста
+emoji==2.12.1
+
+# Сайт
+flask
+gunicorn

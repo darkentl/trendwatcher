@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сигналы</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Сигналы</h1>
+  <span class="count" id="count-label"></span>
+</header>
+
+<div class="filters" id="filters"></div>
+<div class="cards" id="cards"></div>
+
+<script>
+const raw = {{ signals_json | safe }};
+const signals = Array.isArray(raw) ? raw : (raw.signals || []);
+
+function parseDate(s) {
+  if (!s) return '';
+  const d = new Date(s.replace(' ', 'T').replace(/\+\d{2}:\d{2}$/, 'Z'));
+  return isNaN(d) ? s : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+const topics = ['все', ...new Set(signals.map(s => s.topic).filter(Boolean))];
+let active = 'все';
+
+function renderFilters() {
+  document.getElementById('filters').innerHTML = topics.map(t =>
+    `<button class="filter-btn ${t === active ? 'active' : ''}" onclick="setFilter('${t}')">${t.replace('_', ' ')}</button>`
+  ).join('');
+}
+
+function setFilter(t) {
+  active = t;
+  renderFilters();
+  renderCards();
+}
+
+function renderCards() {
+  const filtered = (active === "все" ? signals : signals.filter(s => s.topic === active)).slice().sort((a, b) => (b.hotness || 0) - (a.hotness || 0));
+  document.getElementById('count-label').textContent =
+    filtered.length + ' ' + plural(filtered.length, 'сигнал', 'сигнала', 'сигналов');
+
+  const el = document.getElementById('cards');
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty">Нет сигналов в этой теме</div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map((s, i) => {
+    const hotPct = Math.min(100, Math.round(s.hotness || 0));
+    const entities = (s.entities || []).map(e => `<span class="entity">${e}</span>`).join('');
+
+    return `
+    <div class="card" id="card-${i}">
+      <div class="card-top">
+        <a class="card-title" href="${s.url || '#'}" target="_blank" rel="noopener">${s.title}</a>
+        <div class="hotness-wrap">
+          <div class="hotness-bar"><div class="hotness-fill" style="width:${hotPct}%"></div></div>
+          <span class="hotness-label">${hotPct}</span>
+        </div>
+      </div>
+
+      <div class="card-meta">
+        ${s.topic ? `<span class="tag">${s.topic.replace('_', ' ')}</span>` : ''}
+        ${s.tone ? `<span class="tone-tag">${s.tone}</span>` : ''}
+        ${s.source ? `<span class="sep">·</span><a class="source-link" "target="_blank" rel="noopener">${s.source}</a>` : ''}
+        ${s.date ? `<span class="sep">·</span><span class="date">${parseDate(s.date)}</span>` : ''}
+      </div>
+
+      ${s.summary ? `<div class="card-summary">${s.summary}</div>` : ''}
+      ${s.why_hot ? `<div class="card-why">${s.why_hot}</div>` : ''}
+      ${entities ? `<div class="card-entities">${entities}</div>` : ''}
+      ${s.draft_for_team ? `<div class="card-draft">${s.draft_for_team}</div>` : ''}
+
+      <div class="card-footer">
+        ${s.draft_for_team ? `<button class="toggle-btn" onclick="toggle(${i}, event)">черновик ↓</button>` : '<span></span>'}
+        ${s.url ? `<a class="read-link" href="${s.url}" target="_blank" rel="noopener">читать →</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggle(i, e) {
+  e.stopPropagation();
+  const card = document.getElementById('card-' + i);
+  const btn = card.querySelector('.toggle-btn');
+  card.classList.toggle('expanded');
+  btn.textContent = card.classList.contains('expanded') ? 'черновик ↑' : 'черновик ↓';
+}
+
+function plural(n, one, few, many) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if ([2,3,4].includes(m10) && ![12,13,14].includes(m100)) return few;
+  return many;
+}
+
+renderFilters();
+renderCards();
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Telegram sessions
+*.session
+*.session-journal
+sess.session
+
+# Runtime data
+data/*.csv
+data/*.log
+data/embedding_cache.json
+data/seen_infopovods.json
+
+# Generated output
+data/trends.json
+
+# macOS
+.DS_Store
+__MACOSX/
+._*
+
+# IDE
+.vscode/
+.idea/
